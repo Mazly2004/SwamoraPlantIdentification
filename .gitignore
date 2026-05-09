@@ -1,0 +1,34 @@
+# Dependencies
+**/node_modules/
+
+# Environment — commit .env.example, never .env
+**/.env
+!**/.env.example
+
+# Build artifacts
+**/dist/
+**/build/
+**/.vite/
+
+# TypeScript
+**/*.tsbuildinfo
+
+# Drizzle generated output (optional: remove this line to commit migrations)
+SwamoraPlant.Server/drizzle/
+
+# OS
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.kate-swp
+
+# Logs
+*.log
+npm-debug.log*
