@@ -18,6 +18,9 @@
 # Drizzle generated output (optional: remove this line to commit migrations)
 SwamoraPlant.Server/drizzle/
 
+# ML model weights — large binaries, distributed out-of-band
+SwamoraPlant.Server/models/**/*.onnx
+
 # OS
 .DS_Store
 .DS_Store?

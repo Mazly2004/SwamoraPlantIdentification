@@ -4,6 +4,7 @@ import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { imageRouter } from './routes/image.routes.js';
 import { authRouter } from './routes/auth.routes.js';
+import { diagnoseRouter } from './routes/diagnose.routes.js';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as https from 'https';
@@ -34,6 +35,7 @@ app.use('*', cors({
 
 app.route('/api/auth', authRouter);
 app.route('/api/image', imageRouter);
+app.route('/api/diagnose', diagnoseRouter);
 
 app.get('/doc', (c) => {
   const schema = app.getOpenAPIDocument({

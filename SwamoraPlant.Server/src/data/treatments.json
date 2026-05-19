@@ -1,0 +1,73 @@
+{
+  "potato": {
+    "healthy": {
+      "summary": "Plant looks healthy — no treatment needed.",
+      "medicine": null,
+      "productKeywords": []
+    },
+    "early_blight": {
+      "summary": "Early blight (Alternaria solani). Remove affected leaves and apply a chlorothalonil-based fungicide on a 7–10 day schedule.",
+      "medicine": "Chlorothalonil fungicide",
+      "productKeywords": ["chlorothalonil fungicide", "Daconil"]
+    },
+    "late_blight": {
+      "summary": "Late blight (Phytophthora infestans). Act fast — apply a copper or mancozeb fungicide and destroy heavily infected plants.",
+      "medicine": "Mancozeb or copper-based fungicide",
+      "productKeywords": ["mancozeb fungicide", "copper fungicide"]
+    }
+  },
+  "tomato": {
+    "healthy": {
+      "summary": "Plant looks healthy — no treatment needed.",
+      "medicine": null,
+      "productKeywords": []
+    },
+    "early_blight": {
+      "summary": "Early blight. Prune lower leaves and apply chlorothalonil or copper fungicide weekly.",
+      "medicine": "Chlorothalonil fungicide",
+      "productKeywords": ["chlorothalonil fungicide", "Daconil"]
+    },
+    "late_blight": {
+      "summary": "Late blight. Apply mancozeb or copper fungicide immediately and remove infected foliage.",
+      "medicine": "Mancozeb or copper fungicide",
+      "productKeywords": ["mancozeb fungicide", "copper fungicide"]
+    },
+    "leaf_mold": {
+      "summary": "Leaf mold (Passalora fulva). Improve ventilation and apply chlorothalonil or mancozeb.",
+      "medicine": "Chlorothalonil fungicide",
+      "productKeywords": ["chlorothalonil fungicide"]
+    },
+    "septoria_leaf_spot": {
+      "summary": "Septoria leaf spot. Remove infected leaves and apply copper or chlorothalonil fungicide.",
+      "medicine": "Copper fungicide",
+      "productKeywords": ["copper fungicide", "chlorothalonil"]
+    },
+    "bacterial_spot": {
+      "summary": "Bacterial spot. Apply copper-based bactericide; rotate crops next season.",
+      "medicine": "Copper bactericide",
+      "productKeywords": ["copper bactericide", "copper sulfate"]
+    }
+  },
+  "maize": {
+    "healthy": {
+      "summary": "Plant looks healthy — no treatment needed.",
+      "medicine": null,
+      "productKeywords": []
+    },
+    "common_rust": {
+      "summary": "Common rust (Puccinia sorghi). Apply a triazole fungicide such as propiconazole if infection is heavy.",
+      "medicine": "Propiconazole fungicide",
+      "productKeywords": ["propiconazole fungicide", "Tilt"]
+    },
+    "northern_leaf_blight": {
+      "summary": "Northern leaf blight (Exserohilum turcicum). Apply azoxystrobin or propiconazole; rotate crops.",
+      "medicine": "Azoxystrobin fungicide",
+      "productKeywords": ["azoxystrobin fungicide", "Quadris"]
+    },
+    "gray_leaf_spot": {
+      "summary": "Gray leaf spot (Cercospora zeae-maydis). Apply a strobilurin or triazole fungicide and improve residue management.",
+      "medicine": "Strobilurin fungicide",
+      "productKeywords": ["strobilurin fungicide", "azoxystrobin"]
+    }
+  }
+}
