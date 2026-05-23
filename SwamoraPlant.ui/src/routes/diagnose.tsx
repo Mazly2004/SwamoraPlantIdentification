@@ -78,6 +78,7 @@ function DiagnosePage() {
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(persisted?.photoDataUrl ?? null)
   const [uploading, setUploading] = useState(false)
+  const [cameraReady, setCameraReady] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null,
   )
@@ -93,6 +94,7 @@ function DiagnosePage() {
     streamRef.current?.getTracks().forEach((t) => t.stop())
     streamRef.current = null
     setStream(null)
+    setCameraReady(false)
   }
 
   const startCamera = async () => {
@@ -102,7 +104,13 @@ function DiagnosePage() {
       })
       streamRef.current = mediaStream
       setStream(mediaStream)
-      if (videoRef.current) videoRef.current.srcObject = mediaStream
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream
+        videoRef.current.onloadedmetadata = () => {
+          setCameraReady(true)
+          void videoRef.current?.play().catch(() => undefined)
+        }
+      }
       const devices = await navigator.mediaDevices.enumerateDevices()
       setHasMultipleCameras(devices.filter((d) => d.kind === 'videoinput').length > 1)
     } catch {
@@ -129,6 +137,13 @@ function DiagnosePage() {
 
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
+    if (!cameraReady || videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+      setMessage({
+        type: 'error',
+        text: 'Camera is still loading. Give it a second, then try Capture again.',
+      })
+      return
+    }
     const video = videoRef.current
     const canvas = canvasRef.current
     canvas.width = video.videoWidth
@@ -155,6 +170,7 @@ function DiagnosePage() {
     setPhotoUrl(URL.createObjectURL(file))
     setResult(null)
     setMessage(null)
+    setCameraReady(false)
     sessionStorage.removeItem(STORAGE_KEY)
     stopCamera()
     e.target.value = ''
@@ -165,6 +181,7 @@ function DiagnosePage() {
     setPhotoUrl(null)
     setMessage(null)
     setResult(null)
+    setCameraReady(false)
     sessionStorage.removeItem(STORAGE_KEY)
     startCamera()
   }
@@ -243,6 +260,7 @@ function DiagnosePage() {
           onPickFile={() => fileInputRef.current?.click()}
           onDiagnose={uploadPhoto}
           hasMultipleCameras={hasMultipleCameras}
+          cameraReady={cameraReady}
           uploading={uploading}
         />
 
@@ -307,6 +325,7 @@ interface HeroProps {
   onPickFile: () => void
   onDiagnose: () => void
   hasMultipleCameras: boolean
+  cameraReady: boolean
   uploading: boolean
 }
 
@@ -325,6 +344,7 @@ function HeroCaptureCard({
   onPickFile,
   onDiagnose,
   hasMultipleCameras,
+  cameraReady,
   uploading,
 }: HeroProps) {
   const primary = photoUrl
@@ -336,10 +356,10 @@ function HeroCaptureCard({
       }
     : stream
       ? {
-          label: 'Capture',
+          label: cameraReady ? 'Capture' : 'Camera loading…',
           icon: <Camera className="h-3.5 w-3.5" />,
           onClick: onCapture,
-          disabled: false,
+          disabled: !cameraReady,
         }
       : {
           label: 'Upload',
@@ -396,6 +416,11 @@ function HeroCaptureCard({
             autoPlay
             playsInline
             muted
+            onLoadedMetadata={() => {
+              // The camera is usable once the element reports dimensions.
+              // This keeps Capture disabled until a frame can actually be grabbed.
+              void videoRef.current?.play().catch(() => undefined)
+            }}
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (

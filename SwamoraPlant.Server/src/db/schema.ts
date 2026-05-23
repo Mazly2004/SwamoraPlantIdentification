@@ -120,6 +120,57 @@ export const favoriteShops = pgTable(
   }),
 );
 
+// User-managed farms. A user can have many farms, each is independently
+// configurable through widgets.
+export const farms = pgTable(
+  "farms",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    cropType: text("crop_type"),
+    location: text("location"),
+    lat: real("lat"),
+    lng: real("lng"),
+    coverImage: text("cover_image"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    userIdx: index("farms_user_idx").on(t.userId),
+  }),
+);
+
+// Widgets a user has placed on a farm dashboard. `type` identifies which
+// renderer to use on the client. `config` stores per-widget knobs (threshold,
+// units, sensor binding) so we can wire real sensors later without schema
+// changes. `position` is the index in the sortable grid.
+export const farmWidgets = pgTable(
+  "farm_widgets",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farms.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title"),
+    size: text("size").notNull().default("md"),
+    position: integer("position").notNull().default(0),
+    config: jsonb("config").notNull().default({}),
+    dataSource: text("data_source").notNull().default("mock"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    farmIdx: index("farm_widgets_farm_idx").on(t.farmId),
+    userIdx: index("farm_widgets_user_idx").on(t.userId),
+  }),
+);
+
 // Crowdsourced shop submissions awaiting moderation. Lightweight schema —
 // we'll surface these on the admin side once volume grows.
 export const shopSubmissions = pgTable(

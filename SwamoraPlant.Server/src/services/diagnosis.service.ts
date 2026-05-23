@@ -106,12 +106,21 @@ export const getDiagnosisById = async (
     .limit(1);
   const row = rows[0];
   if (!row) return null;
+  // Older rows predate the `products` field; backfill an empty list so the
+  // response shape stays stable for the API consumer.
+  const storedTreatment = row.treatment as Treatment & {
+    products?: Treatment['products'];
+  };
+  const treatment: Treatment = {
+    ...storedTreatment,
+    products: storedTreatment.products ?? [],
+  };
   return {
     id: row.id,
     plant: row.plant as PlantType,
     topPrediction: { label: row.topLabel, confidence: row.topConfidence },
     predictions: row.predictions as Prediction[],
-    treatment: row.treatment as Treatment,
+    treatment,
     diseaseInfo: row.diseaseInfo as DiseaseInfo,
     shops: (row.shops as Shop[] | null) ?? [],
     imageId: row.imageId,

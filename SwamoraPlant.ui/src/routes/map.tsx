@@ -45,7 +45,10 @@ import {
 } from 'lucide-react'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { AppShell } from '@/components/AppShell'
-import { ShopFinderMap } from '@/components/monitoring/ShopFinderMap'
+import {
+  ShopFinderMap,
+  type RouteInfo,
+} from '@/components/monitoring/ShopFinderMap'
 import {
   favoritesApi,
   shopKeyOf,
@@ -118,6 +121,10 @@ function MapPage() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [query, setQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  // In-app directions
+  const [routeShop, setRouteShop] = useState<Shop | null>(null)
+  const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null)
 
   // Filter state — applied client-side over the API results.
   const [radiusKm, setRadiusKm] = useState(15)
@@ -347,6 +354,8 @@ function MapPage() {
               shops={filteredShops}
               activeShopIndex={activeIndex}
               onShopClick={setActiveIndex}
+              routeDestination={routeShop?.location ?? null}
+              onRouteInfo={setRouteInfo}
             />
           </div>
         </div>
@@ -530,13 +539,32 @@ function MapPage() {
                   isFavorite={favoriteKeys.has(shopKeyOf(shop))}
                   onClick={() => setActiveIndex(i)}
                   onToggleFavorite={() => toggleFavorite(shop)}
+                  onDirections={() => {
+                    setActiveIndex(i)
+                    setRouteShop(shop)
+                  }}
                 />
               ))}
           </ul>
 
-          {/* In-page directions card for active shop */}
-          {activeShop && (
-            <DirectionsCard origin={origin} shop={activeShop} />
+          {/* In-page directions: active route panel takes priority over the CTA. */}
+          {routeShop ? (
+            <DirectionsPanel
+              shop={routeShop}
+              info={routeInfo}
+              origin={origin}
+              onClose={() => {
+                setRouteShop(null)
+                setRouteInfo(null)
+              }}
+            />
+          ) : (
+            activeShop && (
+              <DirectionsCard
+                shop={activeShop}
+                onStart={() => setRouteShop(activeShop)}
+              />
+            )
           )}
 
           {/* Submit-a-shop CTA */}
@@ -570,15 +598,16 @@ interface ShopRowProps {
   isFavorite: boolean
   onClick: () => void
   onToggleFavorite: () => void
+  onDirections: () => void
 }
 
 function ShopRow({
   shop,
-  origin,
   active,
   isFavorite,
   onClick,
   onToggleFavorite,
+  onDirections,
 }: ShopRowProps) {
   const rowRef = useRef<HTMLLIElement>(null)
   useEffect(() => {
@@ -641,15 +670,16 @@ function ShopRow({
                 <HeartOff className="h-3.5 w-3.5" />
               )}
             </button>
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${shop.location.lat},${shop.location.lng}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDirections()
+              }}
               className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
             >
-              Directions <ArrowUpRight className="h-2.5 w-2.5" />
-            </a>
+              Directions <Navigation className="h-2.5 w-2.5" />
+            </button>
           </div>
         </div>
       </button>
@@ -958,14 +988,14 @@ function TreatmentGuidePanel({ diagnosis }: { diagnosis: DiagnosisResult }) {
   )
 }
 
-/* ──────────────────────────  DIRECTIONS CARD  ────────────────────────── */
+/* ──────────────────────────  DIRECTIONS CARD (collapsed)  ────────────────────────── */
 
 function DirectionsCard({
-  origin,
   shop,
+  onStart,
 }: {
-  origin: { lat: number; lng: number }
   shop: Shop
+  onStart: () => void
 }) {
   const km =
     shop.distanceMeters !== undefined
@@ -987,16 +1017,98 @@ function DirectionsCard({
           {km && ` · ${km} km`}
         </div>
       </div>
+      <button
+        type="button"
+        onClick={onStart}
+        className="shrink-0 inline-flex items-center gap-1 h-8 rounded-full px-3 text-[11px] font-medium bg-[#1a1d1a] text-white hover:bg-[#262a26] transition-colors"
+      >
+        <Navigation className="h-3 w-3" />
+        Start
+      </button>
+    </div>
+  )
+}
+
+/* ──────────────────────────  DIRECTIONS PANEL (expanded, in-app turn-by-turn)  ────────────────────────── */
+
+function DirectionsPanel({
+  shop,
+  info,
+  origin,
+  onClose,
+}: {
+  shop: Shop
+  info: RouteInfo | null
+  origin: { lat: number; lng: number }
+  onClose: () => void
+}) {
+  return (
+    <div className="rounded-xl border border-primary/40 bg-primary/5 p-3 flex flex-col gap-2.5 max-h-[280px]">
+      <div className="flex items-start gap-2.5">
+        <div className="h-9 w-9 rounded-full bg-[#3aa657] text-white flex items-center justify-center shrink-0">
+          <Navigation className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Driving directions
+          </div>
+          <div className="text-sm font-semibold truncate">{shop.name}</div>
+          <div className="text-[11px] text-muted-foreground">
+            {info
+              ? `${info.duration ?? '—'} · ${info.distance ?? '—'}`
+              : 'Calculating route…'}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close directions"
+          className="shrink-0 inline-flex items-center gap-1 h-7 w-7 rounded-full bg-card border border-border hover:bg-muted text-foreground/70"
+        >
+          <X className="h-3.5 w-3.5 m-auto" />
+        </button>
+      </div>
+
+      {info && info.steps.length > 0 ? (
+        <ol className="overflow-y-auto pr-1 space-y-1.5 text-[11px] leading-snug text-foreground/85 list-decimal pl-5">
+          {info.steps.map((step, i) => (
+            <li key={i}>
+              <span>{step.instruction}</span>
+              {step.distance && (
+                <span className="text-muted-foreground">
+                  {' '}· {step.distance}
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+      ) : info === null ? (
+        <div className="text-[11px] text-muted-foreground py-2">
+          Couldn't calculate a driving route. Try the Google Maps fallback below.
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <StepSkeleton />
+          <StepSkeleton />
+          <StepSkeleton />
+        </div>
+      )}
+
       <a
         href={`https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${shop.location.lat},${shop.location.lng}`}
         target="_blank"
         rel="noreferrer noopener"
-        className="shrink-0 inline-flex items-center gap-1 h-8 rounded-full px-3 text-[11px] font-medium bg-[#1a1d1a] text-white hover:bg-[#262a26] transition-colors"
+        className="self-end inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
       >
-        Start
-        <ArrowUpRight className="h-3 w-3" />
+        Open in Google Maps <ArrowUpRight className="h-2.5 w-2.5" />
       </a>
     </div>
+  )
+}
+
+function StepSkeleton() {
+  return (
+    <div className="h-3 w-full rounded bg-muted/70 animate-pulse" />
   )
 }
 

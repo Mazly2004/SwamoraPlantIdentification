@@ -11,10 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MapRouteImport } from './routes/map'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as DiagnoseRouteImport } from './routes/diagnose'
 import { Route as DevicesRouteImport } from './routes/devices'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FarmsFarmIdRouteImport } from './routes/farms.$farmId'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -24,11 +25,6 @@ const SettingsRoute = SettingsRouteImport.update({
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnoseRoute = DiagnoseRouteImport.update({
@@ -41,59 +37,88 @@ const DevicesRoute = DevicesRouteImport.update({
   path: '/devices',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FarmsFarmIdRoute = FarmsFarmIdRouteImport.update({
+  id: '/farms/$farmId',
+  path: '/farms/$farmId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/devices': typeof DevicesRoute
   '/diagnose': typeof DiagnoseRoute
-  '/login': typeof LoginRoute
   '/map': typeof MapRoute
   '/settings': typeof SettingsRoute
+  '/farms/$farmId': typeof FarmsFarmIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/devices': typeof DevicesRoute
   '/diagnose': typeof DiagnoseRoute
-  '/login': typeof LoginRoute
   '/map': typeof MapRoute
   '/settings': typeof SettingsRoute
+  '/farms/$farmId': typeof FarmsFarmIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/devices': typeof DevicesRoute
   '/diagnose': typeof DiagnoseRoute
-  '/login': typeof LoginRoute
   '/map': typeof MapRoute
   '/settings': typeof SettingsRoute
+  '/farms/$farmId': typeof FarmsFarmIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/devices' | '/diagnose' | '/login' | '/map' | '/settings'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/devices'
+    | '/diagnose'
+    | '/map'
+    | '/settings'
+    | '/farms/$farmId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/devices' | '/diagnose' | '/login' | '/map' | '/settings'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/devices'
+    | '/diagnose'
+    | '/map'
+    | '/settings'
+    | '/farms/$farmId'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/devices'
     | '/diagnose'
-    | '/login'
     | '/map'
     | '/settings'
+    | '/farms/$farmId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   DevicesRoute: typeof DevicesRoute
   DiagnoseRoute: typeof DiagnoseRoute
-  LoginRoute: typeof LoginRoute
   MapRoute: typeof MapRoute
   SettingsRoute: typeof SettingsRoute
+  FarmsFarmIdRoute: typeof FarmsFarmIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -112,13 +137,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/diagnose': {
       id: '/diagnose'
       path: '/diagnose'
@@ -133,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -140,16 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/farms/$farmId': {
+      id: '/farms/$farmId'
+      path: '/farms/$farmId'
+      fullPath: '/farms/$farmId'
+      preLoaderRoute: typeof FarmsFarmIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   DevicesRoute: DevicesRoute,
   DiagnoseRoute: DiagnoseRoute,
-  LoginRoute: LoginRoute,
   MapRoute: MapRoute,
   SettingsRoute: SettingsRoute,
+  FarmsFarmIdRoute: FarmsFarmIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -12,9 +12,16 @@ const PredictionSchema = z.object({
   confidence: z.number(),
 });
 
+const TreatmentProductSchema = z.object({
+  name: z.string(),
+  size: z.string(),
+  priceUsd: z.number(),
+});
+
 const TreatmentSchema = z.object({
   summary: z.string(),
   medicine: z.string().nullable(),
+  products: z.array(TreatmentProductSchema),
   productKeywords: z.array(z.string()),
 });
 

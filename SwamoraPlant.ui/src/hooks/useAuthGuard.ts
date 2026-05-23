@@ -14,7 +14,7 @@ export function useAuthGuard() {
 
   useEffect(() => {
     if (!token) {
-      navigate({ to: '/login' })
+      navigate({ to: '/' })
       return
     }
     authApi
@@ -25,7 +25,7 @@ export function useAuthGuard() {
       })
       .catch(() => {
         clearAuth()
-        navigate({ to: '/login' })
+        navigate({ to: '/' })
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

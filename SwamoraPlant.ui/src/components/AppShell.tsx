@@ -32,7 +32,7 @@ interface NavItem {
 // Icon-only vertical rail. Routes are remapped to existing app routes,
 // while presenting the FarmSight iconography from the mockup.
 const NAV: NavItem[] = [
-  { to: '/', label: 'Dashboard', icon: Leaf },
+  { to: '/dashboard', label: 'Dashboard', icon: Leaf },
   { to: '/diagnose', label: 'Diagnose', icon: Droplets },
   { to: '/devices', label: 'Schedule', icon: Calendar },
   { to: '/map', label: 'Controls', icon: SlidersHorizontal },
@@ -57,7 +57,7 @@ export function AppShell({ children }: AppShellProps) {
 
   const handleLogout = () => {
     clearAuth()
-    navigate({ to: '/login' })
+    navigate({ to: '/' })
   }
 
   const handleDownload = () => {

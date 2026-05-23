@@ -18,7 +18,7 @@ function SettingsPage() {
 
   const handleLogout = () => {
     clearAuth()
-    navigate({ to: '/login' })
+    navigate({ to: '/' })
   }
 
   return (

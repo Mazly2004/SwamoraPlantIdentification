@@ -61,6 +61,29 @@ export function DiagnosisResultCard({ result }: Props) {
             <span className="font-medium">{treatment.medicine}</span>
           </p>
         )}
+        {treatment.products && treatment.products.length > 0 && (
+          <div className="mt-2.5">
+            <div className="text-xs text-muted-foreground mb-1">
+              Available products & indicative prices
+            </div>
+            <ul className="divide-y divide-border rounded-md border border-border overflow-hidden">
+              {treatment.products.map((p) => (
+                <li
+                  key={`${p.name}-${p.size}`}
+                  className="flex items-center justify-between gap-3 px-3 py-1.5 text-sm"
+                >
+                  <span className="font-medium truncate">{p.name}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {p.size}
+                  </span>
+                  <span className="text-sm font-semibold whitespace-nowrap">
+                    ${p.priceUsd}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Shops */}

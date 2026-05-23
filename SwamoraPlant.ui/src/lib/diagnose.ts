@@ -8,9 +8,16 @@ export interface Prediction {
   confidence: number
 }
 
+export interface TreatmentProduct {
+  name: string
+  size: string
+  priceUsd: number
+}
+
 export interface Treatment {
   summary: string
   medicine: string | null
+  products: TreatmentProduct[]
   productKeywords: string[]
 }
 

@@ -1,19 +1,36 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   APIProvider,
   Map,
   AdvancedMarker,
   Pin,
   useMap,
+  useMapsLibrary,
 } from '@vis.gl/react-google-maps'
 import { GOOGLE_MAPS_API_KEY, GOOGLE_MAPS_MAP_ID } from '@/lib/maps-config'
 import type { Shop } from '@/lib/shops'
+
+export interface DirectionStep {
+  instruction: string
+  distance: string | null
+  duration: string | null
+}
+
+export interface RouteInfo {
+  distance: string | null
+  duration: string | null
+  steps: DirectionStep[]
+}
 
 export interface ShopFinderMapProps {
   origin: { lat: number; lng: number }
   shops: Shop[]
   activeShopIndex: number | null
   onShopClick: (index: number) => void
+  /** When set, draws an in-app driving route from origin to this point. */
+  routeDestination?: { lat: number; lng: number } | null
+  /** Called when the route resolves (or clears). */
+  onRouteInfo?: (info: RouteInfo | null) => void
 }
 
 /**
@@ -26,7 +43,7 @@ export function ShopFinderMap(props: ShopFinderMapProps) {
     return <Fallback {...props} />
   }
   return (
-    <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['routes']}>
       <Map
         defaultCenter={props.origin}
         defaultZoom={12}
@@ -56,29 +73,135 @@ export function ShopFinderMap(props: ShopFinderMapProps) {
             </AdvancedMarker>
           )
         })}
-        <FitBounds origin={props.origin} shops={props.shops} />
+        <FitBounds
+          origin={props.origin}
+          shops={props.shops}
+          routeDestination={props.routeDestination ?? null}
+        />
+        {props.routeDestination && (
+          <DirectionsLayer
+            origin={props.origin}
+            destination={props.routeDestination}
+            onRouteInfo={props.onRouteInfo}
+          />
+        )}
       </Map>
     </APIProvider>
   )
 }
 
+interface DirectionsLayerProps {
+  origin: { lat: number; lng: number }
+  destination: { lat: number; lng: number }
+  onRouteInfo?: (info: RouteInfo | null) => void
+}
+
+function DirectionsLayer({
+  origin,
+  destination,
+  onRouteInfo,
+}: DirectionsLayerProps) {
+  const map = useMap()
+  const routesLib = useMapsLibrary('routes')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [renderer, setRenderer] = useState<any>(null)
+
+  // Create the renderer once per map+library load.
+  useEffect(() => {
+    if (!map || !routesLib) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Renderer: any = (routesLib as any).DirectionsRenderer
+    const r = new Renderer({
+      map,
+      suppressMarkers: true, // we draw our own AdvancedMarkers
+      preserveViewport: true, // don't fight FitBounds
+      polylineOptions: {
+        strokeColor: '#3aa657',
+        strokeOpacity: 0.9,
+        strokeWeight: 5,
+      },
+    })
+    setRenderer(r)
+    return () => {
+      r.setMap(null)
+      onRouteInfo?.(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, routesLib])
+
+  // Request a route whenever origin/destination changes.
+  useEffect(() => {
+    if (!routesLib || !renderer) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Service: any = (routesLib as any).DirectionsService
+    const svc = new Service()
+    svc.route(
+      {
+        origin,
+        destination,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        travelMode: (routesLib as any).TravelMode.DRIVING,
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (result: any, status: string) => {
+        if (status === 'OK' && result) {
+          renderer.setDirections(result)
+          const leg = result.routes?.[0]?.legs?.[0]
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const steps: DirectionStep[] = (leg?.steps ?? []).map((s: any) => ({
+            // Google returns HTML in instructions ("Turn <b>left</b>"); strip tags.
+            instruction: String(s.instructions ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+            distance: s.distance?.text ?? null,
+            duration: s.duration?.text ?? null,
+          }))
+          onRouteInfo?.({
+            distance: leg?.distance?.text ?? null,
+            duration: leg?.duration?.text ?? null,
+            steps,
+          })
+        } else {
+          onRouteInfo?.(null)
+        }
+      },
+    )
+  }, [origin, destination, routesLib, renderer, onRouteInfo])
+
+  return null
+}
+
 interface FitBoundsProps {
   origin: { lat: number; lng: number }
   shops: Shop[]
+  routeDestination: { lat: number; lng: number } | null
 }
 
-function FitBounds({ origin, shops }: FitBoundsProps) {
+function FitBounds({ origin, shops, routeDestination }: FitBoundsProps) {
   const map = useMap()
   useEffect(() => {
-    if (!map || shops.length === 0) return
+    if (!map) return
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const g = (window as any).google?.maps
     if (!g) return
     const bounds = new g.LatLngBounds()
     bounds.extend(origin)
-    shops.forEach((s) => bounds.extend(s.location))
+    // When a route is active, zoom tight to origin+destination so the polyline
+    // fills the view. Otherwise fit all shops.
+    if (routeDestination) {
+      bounds.extend(routeDestination)
+    } else if (shops.length > 0) {
+      shops.forEach((s) => bounds.extend(s.location))
+    } else {
+      return
+    }
     map.fitBounds(bounds, 64)
-  }, [map, origin.lat, origin.lng, shops])
+  }, [
+    map,
+    origin.lat,
+    origin.lng,
+    shops,
+    routeDestination?.lat,
+    routeDestination?.lng,
+  ])
   return null
 }
 

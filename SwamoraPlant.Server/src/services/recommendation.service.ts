@@ -8,9 +8,20 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { PlantType } from '../ml/plant-types.js';
 
+export interface TreatmentProduct {
+  /** Brand or product name as sold locally (e.g. "Metalaxyl + Mancozeb", "Kumir"). */
+  name: string;
+  /** Container size, e.g. "1kg", "1L", "300g". */
+  size: string;
+  /** Indicative retail price in USD. */
+  priceUsd: number;
+}
+
 export interface Treatment {
   summary: string;
   medicine: string | null;
+  /** Locally-available products with size + indicative USD price. */
+  products: TreatmentProduct[];
   productKeywords: string[];
 }
 
@@ -27,6 +38,7 @@ const FALLBACK: Treatment = {
   summary:
     'No specific recommendation on file for this diagnosis. Consult a local agronomist.',
   medicine: null,
+  products: [],
   productKeywords: [],
 };
 

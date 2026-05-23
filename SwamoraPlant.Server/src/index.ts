@@ -9,6 +9,7 @@ import { shopsRouter } from './routes/shops.routes.js';
 import { chatRouter } from './routes/chat.routes.js';
 import { favoritesRouter } from './routes/favorites.routes.js';
 import { shopSubmissionsRouter } from './routes/shop-submissions.routes.js';
+import { farmsRouter } from './routes/farms.routes.js';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as https from 'https';
@@ -46,6 +47,8 @@ app.route('/api/savi', chatRouter as any);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 app.route('/api/favorites', favoritesRouter as any);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+app.route('/api/farms', farmsRouter as any);
 app.route('/api/shop-submissions', shopSubmissionsRouter as any);
 
 app.get('/doc', (c) => {
