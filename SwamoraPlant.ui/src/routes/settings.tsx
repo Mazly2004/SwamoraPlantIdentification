@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Sprout,
   Mail,
+  ShieldCheck,
 } from 'lucide-react'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { AppShell } from '@/components/AppShell'
@@ -237,6 +238,24 @@ function ProfilePage() {
                 mono
               />
             </div>
+
+            {user?.isAdmin && (
+              <Link
+                to="/admin"
+                className="mt-5 group flex items-center gap-3 rounded-2xl p-4 bg-gradient-to-br from-[#caf26b]/40 via-[#caf26b]/20 to-white border border-[#caf26b]/50 hover:border-[#3a7d1f]/50 transition-colors"
+              >
+                <div className="h-10 w-10 rounded-xl bg-neutral-900 text-[#caf26b] flex items-center justify-center shadow-sm">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold">Admin dashboard</div>
+                  <div className="text-xs text-foreground/60">
+                    Manage users, farms and platform activity
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-foreground/40 group-hover:text-foreground/70 transition-colors" />
+              </Link>
+            )}
 
             <SectionHeader title="My farms" className="mt-7" />
             {farms.length === 0 ? (

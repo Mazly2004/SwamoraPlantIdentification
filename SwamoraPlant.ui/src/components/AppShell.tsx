@@ -6,9 +6,7 @@ import {
   Leaf,
   Lightbulb,
   LogOut,
-  Mic,
   Moon,
-  Search,
   Settings,
   SlidersHorizontal,
   Sparkles,
@@ -99,24 +97,8 @@ export function AppShell({ children }: AppShellProps) {
               </span>
             </Link>
 
-            {/* Search + mic, centered */}
-            <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
-              <div className="glass-pill flex items-center gap-2 rounded-full h-10 px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
-                <Search className="h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="bg-transparent outline-none text-sm w-full placeholder:text-muted-foreground"
-                />
-              </div>
-              <button
-                type="button"
-                aria-label="Voice"
-                className="glass-pill h-10 w-10 rounded-full flex items-center justify-center hover:bg-white/90 transition-colors"
-              >
-                <Mic className="h-4 w-4" />
-              </button>
-            </div>
+            {/* Spacer to keep right cluster aligned to the edge */}
+            <div className="flex-1" />
 
             {/* Right cluster */}
             <div className="flex items-center gap-2 shrink-0">

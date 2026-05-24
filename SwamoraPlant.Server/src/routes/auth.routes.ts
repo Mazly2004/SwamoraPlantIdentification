@@ -32,6 +32,7 @@ const loginRoute = createRoute({
               id: z.number(),
               email: z.string(),
               name: z.string(),
+              isAdmin: z.boolean(),
             }),
           }),
         },
@@ -64,6 +65,7 @@ const meRoute = createRoute({
             id: z.number(),
             email: z.string(),
             name: z.string(),
+            isAdmin: z.boolean(),
           }),
         },
       },
@@ -87,7 +89,18 @@ authRouter.openapi(loginRoute, async (c) => {
     return c.json({ error: 'Invalid email or password' }, 401);
   }
   const token = await signToken({ id: user.id, email: user.email });
-  return c.json({ token, user: { id: user.id, email: user.email, name: user.name } }, 200);
+  return c.json(
+    {
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isAdmin: user.isAdmin,
+      },
+    },
+    200,
+  );
 });
 
 const signupRoute = createRoute({
@@ -119,6 +132,7 @@ const signupRoute = createRoute({
               id: z.number(),
               email: z.string(),
               name: z.string(),
+              isAdmin: z.boolean(),
             }),
           }),
         },
@@ -144,7 +158,19 @@ authRouter.openapi(signupRoute, async (c) => {
   }
   const created = await createUser(name, email, password);
   const token = await signToken({ id: created.id, email: created.email });
-  return c.json({ token, user: { id: created.id, email: created.email, name: created.name } }, 201);
+  // Newly created users are never admins by default.
+  return c.json(
+    {
+      token,
+      user: {
+        id: created.id,
+        email: created.email,
+        name: created.name,
+        isAdmin: false,
+      },
+    },
+    201,
+  );
 });
 
 authRouter.use('/me', authMiddleware);
@@ -153,5 +179,8 @@ authRouter.openapi(meRoute, async (c) => {
   const payload = (c as any).get('jwtUser') as { id: number; email: string };
   const user = await findUserByEmail(payload.email);
   if (!user) return c.json({ error: 'User not found' }, 401);
-  return c.json({ id: user.id, email: user.email, name: user.name }, 200);
+  return c.json(
+    { id: user.id, email: user.email, name: user.name, isAdmin: user.isAdmin },
+    200,
+  );
 });

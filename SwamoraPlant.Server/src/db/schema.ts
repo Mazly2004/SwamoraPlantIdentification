@@ -6,6 +6,7 @@ import {
   integer,
   real,
   jsonb,
+  boolean,
   index,
 } from "drizzle-orm/pg-core";
 
@@ -14,6 +15,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

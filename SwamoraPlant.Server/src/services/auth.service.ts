@@ -25,6 +25,11 @@ export const findUserByEmail = async (email: string) => {
   return result[0] ?? null;
 };
 
+export const findUserById = async (id: number) => {
+  const result = await db.select().from(users).where(eq(users.id, id));
+  return result[0] ?? null;
+};
+
 export const createUser = async (name: string, email: string, password: string) => {
   const passwordHash = await hashPassword(password);
   const result = await db
