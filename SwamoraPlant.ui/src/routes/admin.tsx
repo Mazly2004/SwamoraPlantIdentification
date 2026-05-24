@@ -4,6 +4,8 @@ import {
   ArrowLeft,
   Bell,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Download,
   HelpCircle,
   LayoutDashboard,
@@ -36,7 +38,13 @@ export const Route = createFileRoute('/admin')({
   component: AdminPage,
 })
 
-type Section = 'dashboard' | 'users' | 'farms' | 'diagnoses'
+type Section =
+  | 'dashboard'
+  | 'users'
+  | 'farms'
+  | 'diagnoses'
+  | 'notifications'
+  | 'help'
 
 function AdminPage() {
   const ready = useAuthGuard()
@@ -52,6 +60,13 @@ function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [selectedDetail, setSelectedDetail] = useState<AdminUser | null>(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 12
+
+  // Reset to page 1 whenever the user changes section or refines the search.
+  useEffect(() => {
+    setPage(1)
+  }, [section, search])
 
   // Pull everything on mount — small dataset, fine to load eagerly.
   useEffect(() => {
@@ -66,7 +81,7 @@ function AdminPage() {
       adminApi.stats(),
       adminApi.users(),
       adminApi.farms(),
-      adminApi.diagnoses(50),
+      adminApi.diagnoses(500),
     ])
       .then(([s, u, f, d]) => {
         if (!alive) return
@@ -248,13 +263,20 @@ function AdminPage() {
             <SidebarItem
               icon={Bell}
               label="Notifications"
+              active={section === 'notifications'}
+              onClick={() => setSection('notifications')}
               badge={
                 stats?.totals.pendingSubmissions
                   ? String(stats.totals.pendingSubmissions)
                   : undefined
               }
             />
-            <SidebarItem icon={LifeBuoy} label="Help & support" />
+            <SidebarItem
+              icon={LifeBuoy}
+              label="Help & support"
+              active={section === 'help'}
+              onClick={() => setSection('help')}
+            />
             <Link
               to="/settings"
               className="group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-neutral-400 hover:bg-white/5 hover:text-white transition-colors"
@@ -298,39 +320,56 @@ function AdminPage() {
               {/* Header */}
               <div className="flex items-center justify-between gap-3">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  {section === 'dashboard'
-                    ? 'Admin overview'
-                    : section === 'users'
-                      ? 'Users'
-                      : section === 'farms'
-                        ? 'Farms'
-                        : 'Diagnoses'}
+                  {sectionTitle(section)}
                 </h1>
-                <div className="hidden sm:flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-800"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Import
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white text-neutral-900 border border-neutral-200 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50"
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    Export
-                  </button>
-                </div>
+                {(section === 'users' ||
+                  section === 'farms' ||
+                  section === 'diagnoses') && (
+                  <div className="hidden sm:flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-800"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Import
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-white text-neutral-900 border border-neutral-200 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      Export
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Filter chips */}
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                <Chip label={`Total ${pluralCount(filteredUsers, users, section)}`} solid />
-                <Chip label="Status" />
-                <Chip label="Date" />
-                <Chip label="All filters" />
-              </div>
+              {/* Filter chips — only for tabular sections */}
+              {(section === 'users' ||
+                section === 'farms' ||
+                section === 'diagnoses') && (
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                  <Chip
+                    label={`Total ${pluralCount(
+                      section === 'users'
+                        ? filteredUsers
+                        : section === 'farms'
+                          ? filteredFarms
+                          : filteredDiagnoses,
+                      section === 'users'
+                        ? users
+                        : section === 'farms'
+                          ? farms
+                          : diagnoses,
+                      section,
+                    )}`}
+                    solid
+                  />
+                  <Chip label="Status" />
+                  <Chip label="Date" />
+                  <Chip label="All filters" />
+                </div>
+              )}
 
               {error && (
                 <div className="mt-5 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3">
@@ -348,17 +387,51 @@ function AdminPage() {
                     recentDiagnoses={diagnoses.slice(0, 8)}
                   />
                 ) : section === 'users' ? (
-                  <UsersTable
-                    users={filteredUsers}
-                    currentUserId={user?.id ?? -1}
-                    onToggleAdmin={handleToggleAdmin}
-                    onDelete={handleDeleteUser}
-                    onSelect={setSelectedDetail}
-                  />
+                  <>
+                    <UsersTable
+                      users={paginate(filteredUsers, page, PAGE_SIZE)}
+                      currentUserId={user?.id ?? -1}
+                      onToggleAdmin={handleToggleAdmin}
+                      onDelete={handleDeleteUser}
+                      onSelect={setSelectedDetail}
+                    />
+                    <Pagination
+                      page={page}
+                      pageSize={PAGE_SIZE}
+                      total={filteredUsers.length}
+                      onChange={setPage}
+                    />
+                  </>
                 ) : section === 'farms' ? (
-                  <FarmsTable farms={filteredFarms} />
+                  <>
+                    <FarmsTable farms={paginate(filteredFarms, page, PAGE_SIZE)} />
+                    <Pagination
+                      page={page}
+                      pageSize={PAGE_SIZE}
+                      total={filteredFarms.length}
+                      onChange={setPage}
+                    />
+                  </>
+                ) : section === 'diagnoses' ? (
+                  <>
+                    <DiagnosesTable
+                      diagnoses={paginate(filteredDiagnoses, page, PAGE_SIZE)}
+                    />
+                    <Pagination
+                      page={page}
+                      pageSize={PAGE_SIZE}
+                      total={filteredDiagnoses.length}
+                      onChange={setPage}
+                    />
+                  </>
+                ) : section === 'notifications' ? (
+                  <NotificationsSection
+                    stats={stats}
+                    users={users}
+                    diagnoses={diagnoses}
+                  />
                 ) : (
-                  <DiagnosesTable diagnoses={filteredDiagnoses} />
+                  <HelpSection />
                 )}
               </div>
             </div>
@@ -462,6 +535,23 @@ function pluralCount<T>(filtered: T[], full: T[], section: Section) {
   return filtered.length === full.length
     ? `${full.length} ${label}`
     : `${filtered.length} of ${full.length} ${label}`
+}
+
+function sectionTitle(section: Section) {
+  switch (section) {
+    case 'dashboard':
+      return 'Admin overview'
+    case 'users':
+      return 'Users'
+    case 'farms':
+      return 'Farms'
+    case 'diagnoses':
+      return 'Diagnoses'
+    case 'notifications':
+      return 'Notifications'
+    case 'help':
+      return 'Help & support'
+  }
 }
 
 function SkeletonRows() {
@@ -1159,6 +1249,311 @@ function UserDetailPopover({
             </ul>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------- notifications section ------------------------- */
+
+function NotificationsSection({
+  stats,
+  users,
+  diagnoses,
+}: {
+  stats: AdminStats | null
+  users: AdminUser[]
+  diagnoses: AdminDiagnosis[]
+}) {
+  // Build a synthetic notification feed from real data. As the platform grows
+  // this can be replaced with a backed table; for now it reflects what's
+  // actually happening on the site.
+  type Notif = {
+    id: string
+    title: string
+    body: string
+    when: string
+    tone: 'info' | 'warn' | 'success'
+  }
+
+  const items: Notif[] = []
+
+  const pending = stats?.totals.pendingSubmissions ?? 0
+  if (pending > 0) {
+    items.push({
+      id: 'pending-shops',
+      title: `${pending} shop submission${pending === 1 ? '' : 's'} awaiting review`,
+      body: 'Crowdsourced shops need a moderator before they appear in the map.',
+      when: 'now',
+      tone: 'warn',
+    })
+  }
+
+  if ((stats?.recent.newUsers7d ?? 0) > 0) {
+    items.push({
+      id: 'new-users',
+      title: `${stats!.recent.newUsers7d} new user${stats!.recent.newUsers7d === 1 ? '' : 's'} this week`,
+      body: 'Welcome them and check their onboarding completed.',
+      when: '7d',
+      tone: 'success',
+    })
+  }
+
+  // Most recent users (last 5)
+  users.slice(0, 5).forEach((u) => {
+    items.push({
+      id: `user-${u.id}`,
+      title: `${u.name} joined`,
+      body: u.email,
+      when: formatDate(u.createdAt),
+      tone: 'info',
+    })
+  })
+
+  // Most recent diagnoses (last 5)
+  diagnoses.slice(0, 5).forEach((d) => {
+    items.push({
+      id: `diag-${d.id}`,
+      title: `Diagnosis: ${d.topLabel} (${d.plant})`,
+      body: `${d.userName} · ${(d.topConfidence * 100).toFixed(0)}% confidence`,
+      when: formatDate(d.createdAt),
+      tone: 'info',
+    })
+  })
+
+  if (items.length === 0) {
+    return <Empty label="Nothing new to report." />
+  }
+
+  return (
+    <ul className="divide-y divide-neutral-100 rounded-xl border border-neutral-200">
+      {items.map((n) => (
+        <li key={n.id} className="flex items-start gap-3 px-4 py-3">
+          <span
+            className={cn(
+              'mt-1.5 h-2 w-2 rounded-full shrink-0',
+              n.tone === 'warn'
+                ? 'bg-amber-500'
+                : n.tone === 'success'
+                  ? 'bg-[#62c858]'
+                  : 'bg-neutral-400',
+            )}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium">{n.title}</div>
+            <div className="text-xs text-neutral-500 truncate">{n.body}</div>
+          </div>
+          <div className="text-[11px] text-neutral-500 whitespace-nowrap">
+            {n.when}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/* ------------------------- help & support section ------------------------- */
+
+function HelpSection() {
+  const FAQS: { q: string; a: string }[] = [
+    {
+      q: 'How do I make another user an admin?',
+      a: 'Open the Users tab, click the row menu on the user you want to promote and choose "Make admin". You can revoke it later from the same menu.',
+    },
+    {
+      q: 'What does deleting a user remove?',
+      a: 'Deleting a user cascades through their farms, widgets, diagnoses, chat history, favourites and shop submissions. This action cannot be undone.',
+    },
+    {
+      q: 'Where does diagnosis data come from?',
+      a: 'Plant images are uploaded via the Diagnose page and stored in the configured upload root. The ONNX models in models/ generate predictions, which are persisted with the user and image.',
+    },
+    {
+      q: 'How are shop submissions moderated?',
+      a: 'The Notifications tab surfaces submissions in the pending state. Approval/rejection endpoints can be wired through the shop-submissions service.',
+    },
+  ]
+
+  return (
+    <div className="space-y-5">
+      {/* Contact card */}
+      <div className="rounded-2xl border border-neutral-200 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="h-12 w-12 rounded-xl bg-[#caf26b]/40 text-[#3a7d1f] inline-flex items-center justify-center">
+          <LifeBuoy className="h-6 w-6" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold">Need a hand?</h3>
+          <p className="text-sm text-neutral-600 mt-0.5">
+            Reach the FarmSight team directly for admin issues, bug reports
+            or feature requests.
+          </p>
+        </div>
+        <a
+          href="mailto:olivermazorodze1@gmail.com?subject=FarmSight%20admin%20support"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-2 text-sm font-medium hover:bg-neutral-800"
+        >
+          Email support
+        </a>
+      </div>
+
+      {/* Quick links */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <HelpTile
+          icon={<LayoutDashboard className="h-4 w-4" />}
+          title="API reference"
+          body="OpenAPI docs for every endpoint."
+          href="http://localhost:3000/reference"
+        />
+        <HelpTile
+          icon={<ShieldCheck className="h-4 w-4" />}
+          title="Admin guide"
+          body="How roles, permissions and moderation work."
+        />
+        <HelpTile
+          icon={<HelpCircle className="h-4 w-4" />}
+          title="Report a bug"
+          body="Share a screenshot and what you expected."
+          href="mailto:olivermazorodze1@gmail.com?subject=FarmSight%20bug%20report"
+        />
+      </div>
+
+      {/* FAQ */}
+      <div>
+        <h3 className="text-sm font-semibold mb-2">FAQs</h3>
+        <div className="rounded-xl border border-neutral-200 divide-y divide-neutral-100">
+          {FAQS.map((f, i) => (
+            <details key={i} className="group">
+              <summary className="list-none cursor-pointer px-4 py-3 flex items-center justify-between gap-3 text-sm font-medium hover:bg-neutral-50">
+                <span>{f.q}</span>
+                <ChevronDown className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="px-4 pb-4 text-sm text-neutral-600 leading-relaxed">
+                {f.a}
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HelpTile({
+  icon,
+  title,
+  body,
+  href,
+}: {
+  icon: React.ReactNode
+  title: string
+  body: string
+  href?: string
+}) {
+  const Wrapper: React.ElementType = href ? 'a' : 'div'
+  const wrapperProps = href
+    ? { href, target: href.startsWith('http') ? '_blank' : undefined, rel: 'noreferrer' }
+    : {}
+  return (
+    <Wrapper
+      {...wrapperProps}
+      className={cn(
+        'block rounded-xl border border-neutral-200 p-4',
+        href && 'hover:border-neutral-300 hover:bg-neutral-50 transition-colors',
+      )}
+    >
+      <div className="h-8 w-8 rounded-lg bg-[#caf26b]/40 text-[#3a7d1f] inline-flex items-center justify-center">
+        {icon}
+      </div>
+      <div className="mt-2 text-sm font-semibold">{title}</div>
+      <div className="text-xs text-neutral-500 mt-0.5 leading-relaxed">{body}</div>
+    </Wrapper>
+  )
+}
+
+/* ------------------------- pagination ------------------------- */
+
+function paginate<T>(items: T[], page: number, pageSize: number): T[] {
+  const start = (page - 1) * pageSize
+  return items.slice(start, start + pageSize)
+}
+
+function Pagination({
+  page,
+  pageSize,
+  total,
+  onChange,
+}: {
+  page: number
+  pageSize: number
+  total: number
+  onChange: (p: number) => void
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  if (total <= pageSize) return null
+  const start = (page - 1) * pageSize + 1
+  const end = Math.min(total, page * pageSize)
+
+  // Compact page list with ellipses: 1 … (p-1) p (p+1) … N
+  const pages: (number | 'ellipsis')[] = []
+  const push = (v: number | 'ellipsis') => pages.push(v)
+  const window = new Set<number>([1, totalPages, page - 1, page, page + 1])
+  let last = 0
+  Array.from(window)
+    .filter((n) => n >= 1 && n <= totalPages)
+    .sort((a, b) => a - b)
+    .forEach((n) => {
+      if (last && n - last > 1) push('ellipsis')
+      push(n)
+      last = n
+    })
+
+  return (
+    <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-neutral-100 pt-3">
+      <div className="text-xs text-neutral-500">
+        Showing <span className="font-medium text-neutral-700">{start}</span>–
+        <span className="font-medium text-neutral-700">{end}</span> of{' '}
+        <span className="font-medium text-neutral-700">{total}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(1, page - 1))}
+          disabled={page <= 1}
+          className="h-8 w-8 rounded-md border border-neutral-200 bg-white text-neutral-700 inline-flex items-center justify-center hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        {pages.map((p, i) =>
+          p === 'ellipsis' ? (
+            <span key={`e-${i}`} className="px-1.5 text-xs text-neutral-400">
+              …
+            </span>
+          ) : (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onChange(p)}
+              className={cn(
+                'h-8 min-w-8 px-2 rounded-md text-sm font-medium inline-flex items-center justify-center border',
+                p === page
+                  ? 'bg-neutral-900 text-white border-neutral-900'
+                  : 'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50',
+              )}
+            >
+              {p}
+            </button>
+          ),
+        )}
+        <button
+          type="button"
+          onClick={() => onChange(Math.min(totalPages, page + 1))}
+          disabled={page >= totalPages}
+          className="h-8 w-8 rounded-md border border-neutral-200 bg-white text-neutral-700 inline-flex items-center justify-center hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          aria-label="Next page"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </div>
   )

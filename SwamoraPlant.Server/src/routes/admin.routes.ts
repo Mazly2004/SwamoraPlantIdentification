@@ -102,7 +102,7 @@ adminRouter.get('/farms', async (c) => {
 adminRouter.get('/diagnoses', async (c) => {
   try {
     const limitParam = Number(c.req.query('limit'));
-    const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 100) : 25;
+    const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 1000) : 25;
     const diagnoses = await listRecentDiagnoses(limit);
     return c.json({ diagnoses });
   } catch (err) {
