@@ -1,4 +1,4 @@
-import { MapPin, Pill, Sparkles } from 'lucide-react'
+import { MapPin, Pill, Sparkles, Sprout } from 'lucide-react'
 import type { DiagnosisResult } from '@/lib/diagnose'
 import { formatLabel } from '@/lib/diagnose'
 
@@ -85,6 +85,25 @@ export function DiagnosisResultCard({ result }: Props) {
           </div>
         )}
       </div>
+
+      {/* Fertilizer guidance is intentionally separate from disease treatment. */}
+      {treatment.fertilizer && (
+        <div className="px-4 py-3 border-b border-border">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+            <Sprout className="h-3 w-3" />
+            Fertilizer guidance
+          </div>
+          <p className="text-sm font-medium">
+            {treatment.fertilizer.name ?? 'No corrective fertilizer recommended'}
+          </p>
+          <p className="text-xs leading-relaxed text-muted-foreground mt-1">
+            {treatment.fertilizer.guidance}
+          </p>
+          <p className="text-xs leading-relaxed text-amber-800 mt-1.5">
+            {treatment.fertilizer.caution}
+          </p>
+        </div>
+      )}
 
       {/* Shops */}
       {shops.length > 0 && (

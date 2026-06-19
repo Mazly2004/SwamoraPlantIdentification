@@ -23,9 +23,9 @@ const DEFAULT_STARTERS = [
 
 const DIAGNOSIS_STARTERS = [
   'How do I apply the recommended treatment?',
+  'Which fertilizer should I use?',
   'Will this product harm bees or pets?',
   'What weather is best to spray?',
-  'How can I prevent this next season?',
 ]
 
 export function SaviDialog({

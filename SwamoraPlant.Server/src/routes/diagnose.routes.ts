@@ -18,11 +18,21 @@ const TreatmentProductSchema = z.object({
   priceUsd: z.number(),
 });
 
+const FertilizerRecommendationSchema = z.object({
+  status: z.enum(['recommended', 'conditional', 'not_recommended']),
+  name: z.string().nullable(),
+  nutrients: z.array(z.string()),
+  guidance: z.string(),
+  caution: z.string(),
+  productKeywords: z.array(z.string()),
+});
+
 const TreatmentSchema = z.object({
   summary: z.string(),
   medicine: z.string().nullable(),
   products: z.array(TreatmentProductSchema),
   productKeywords: z.array(z.string()),
+  fertilizer: FertilizerRecommendationSchema,
 });
 
 const DiseaseInfoSchema = z.object({

@@ -40,6 +40,7 @@ import {
   Plus,
   Search,
   Sparkles,
+  Sprout,
   Star,
   X,
 } from 'lucide-react'
@@ -966,24 +967,74 @@ function TreatmentGuidePanel({ diagnosis }: { diagnosis: DiagnosisResult }) {
         </div>
       )}
 
-      {/* How to apply */}
-      <div>
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          How to apply
+      {diagnosis.treatment.fertilizer && (
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Fertilizer guidance
+          </div>
+          <div className="mt-1.5 rounded-xl bg-primary/5 border border-primary/15 p-2.5">
+            <div className="flex items-start gap-2">
+              <Sprout className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <div className="text-[11px] font-semibold">
+                  {diagnosis.treatment.fertilizer.name ??
+                    'No corrective fertilizer recommended'}
+                </div>
+                <p className="mt-1 text-[10px] leading-relaxed text-foreground/75">
+                  {diagnosis.treatment.fertilizer.guidance}
+                </p>
+                <p className="mt-1 text-[10px] leading-relaxed text-amber-800">
+                  {diagnosis.treatment.fertilizer.caution}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-        <ol className="mt-1.5 space-y-1.5 text-[11px] text-foreground/80 list-decimal pl-4">
-          <li>Remove visibly infected leaves and dispose of them away from healthy plants.</li>
-          <li>
-            Mix {diagnosis.treatment.medicine ?? 'the recommended product'} as
-            per label and apply early morning or late afternoon.
-          </li>
-          <li>Re-spray every 7–10 days until symptoms stop spreading.</li>
-          <li>Rotate to a different active ingredient next season.</li>
-        </ol>
-        <p className="text-[10px] text-muted-foreground mt-2">
-          Verify dosage with a local agronomist before applying.
-        </p>
-      </div>
+      )}
+
+      {/* How to apply */}
+      {sev === 'none' ? (
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            What to do next
+          </div>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-foreground/80">
+            No disease treatment is needed. Continue normal crop care, use fertilizer
+            only when soil or crop guidance shows a need, and monitor for new symptoms.
+          </p>
+        </div>
+      ) : diagnosis.treatment.medicine ? (
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            How to apply
+          </div>
+          <ol className="mt-1.5 space-y-1.5 text-[11px] text-foreground/80 list-decimal pl-4">
+            <li>Remove visibly infected leaves and dispose of them away from healthy plants.</li>
+            <li>
+              Mix {diagnosis.treatment.medicine} as per label and apply early morning or
+              late afternoon.
+            </li>
+            <li>Re-apply only on the label schedule while symptoms are still spreading.</li>
+            <li>Rotate active ingredients where the product label recommends it.</li>
+          </ol>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            Verify dosage with a local agronomist before applying.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Non-chemical control
+          </div>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-foreground/80">
+            {diagnosis.treatment.summary}
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            Isolate affected plants, sanitize tools, and confirm the diagnosis with a
+            local agronomist before replanting.
+          </p>
+        </div>
+      )}
     </div>
   )
 }

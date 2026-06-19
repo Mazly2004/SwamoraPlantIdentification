@@ -13,6 +13,7 @@ import {
   Navigation,
   RefreshCcw,
   Sparkles,
+  Sprout,
   SwitchCamera,
   Upload,
 } from 'lucide-react'
@@ -24,6 +25,7 @@ import {
   formatLabel,
   getBrowserLocation,
   type DiagnosisResult,
+  type FertilizerRecommendation,
   type PlantType,
 } from '@/lib/diagnose'
 import { cn } from '@/lib/utils'
@@ -288,6 +290,7 @@ function DiagnosePage() {
           <PredictionModelCard result={result} plantType={plantType} />
           <AiPromptCard result={result} plantType={plantType} hasPhoto={!!photoUrl} />
           <DiseaseInfoCard result={result} plantType={plantType} />
+          <FertilizerGuidanceCard result={result} plantType={plantType} />
           <ShopDirectionsCard result={result} />
         </div>
 
@@ -682,21 +685,29 @@ function AiPromptCard({
   const [chatOpen, setChatOpen] = useState(false)
 
   const products = result?.treatment.products ?? []
+  const fertilizer = result?.treatment.fertilizer
   const cheapest =
     products.length > 0
       ? products.reduce((min, p) => (p.priceUsd < min.priceUsd ? p : min), products[0])
       : null
 
+  const fertilizerText =
+    fertilizer?.status === 'not_recommended'
+      ? ' No corrective fertilizer is recommended for this diagnosis.'
+      : fertilizer?.name
+        ? ` Nutrition support: ${fertilizer.name}, only when soil or crop guidance shows it is needed.`
+        : ''
+
   const text = result
     ? `Diagnosed ${PLANT_LABELS[plantType]} as ${formatLabel(
         result.topPrediction.label,
       )}. Apply ${
-        result.treatment.medicine ?? 'recommended treatment'
+        result.treatment.medicine ?? 'the recommended disease-control steps'
       }${
         cheapest
           ? ` (from ~$${cheapest.priceUsd} for ${cheapest.size})`
           : ''
-      } and monitor over the next 7 days.`
+      } and monitor over the next 7 days.${fertilizerText}`
     : hasPhoto
       ? `Photo captured for ${PLANT_LABELS[plantType]}. Tap Diagnose to run the on-device model and generate a treatment plan.`
       : `Act as an agriculture data analytics system. Select ${PLANT_LABELS[plantType]} crop, capture a clean leaf photo, and the AI will identify disease and recommend treatment.`
@@ -705,12 +716,13 @@ function AiPromptCard({
     ? products.length > 0
       ? [
           'How do I apply this treatment?',
+          'Which fertilizer should I use?',
           'What are the prices and alternatives?',
           'Where can I buy these products?',
-          'Best weather to spray?',
         ]
       : [
           'How do I apply this treatment?',
+          'Which fertilizer should I use?',
           'Will this product harm bees?',
           'Best weather to spray?',
         ]
@@ -764,6 +776,7 @@ function AiPromptCard({
         open={chatOpen}
         onClose={() => setChatOpen(false)}
         diagnosisId={result?.id}
+        starters={quickQuestions}
       />
     </section>
   )
@@ -868,6 +881,115 @@ function DiseaseInfoCard({
           </ul>
         </div>
       )}
+    </section>
+  )
+}
+
+/* ──────────────────  FERTILIZER GUIDANCE CARD  ────────────────── */
+
+const FALLBACK_FERTILIZER: FertilizerRecommendation = {
+  status: 'conditional',
+  name: 'Soil-test-based balanced fertilizer',
+  nutrients: ['Nitrogen (N)', 'Phosphorus (P)', 'Potassium (K)'],
+  guidance:
+    'Use fertilizer only when a soil test or local agronomist confirms a nutrient need.',
+  caution:
+    'Fertilizer can support crop growth, but it does not cure fungal, bacterial, viral, or pest damage.',
+  productKeywords: ['balanced NPK fertilizer'],
+}
+
+const FERTILIZER_STATUS = {
+  recommended: {
+    label: 'Recommended',
+    className: 'bg-emerald-100 text-emerald-800',
+  },
+  conditional: {
+    label: 'Use if needed',
+    className: 'bg-amber-100 text-amber-800',
+  },
+  not_recommended: {
+    label: 'Not recommended',
+    className: 'bg-neutral-200 text-neutral-700',
+  },
+} satisfies Record<
+  FertilizerRecommendation['status'],
+  { label: string; className: string }
+>
+
+function FertilizerGuidanceCard({
+  result,
+  plantType,
+}: {
+  result: DiagnosisResult | null
+  plantType: PlantType
+}) {
+  if (!result) {
+    return (
+      <section className="glass-card rounded-2xl p-4">
+        <header className="flex items-start gap-2.5">
+          <div className="h-8 w-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+            <Sprout className="h-4 w-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold tracking-tight">Fertilizer Guidance</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Diagnose a {PLANT_LABELS[plantType]} leaf to see safe nutrition support.
+            </p>
+          </div>
+        </header>
+      </section>
+    )
+  }
+
+  // Session storage may contain a diagnosis created before this field existed.
+  const fertilizer = result.treatment.fertilizer ?? FALLBACK_FERTILIZER
+  const status = FERTILIZER_STATUS[fertilizer.status]
+
+  return (
+    <section className="glass-card rounded-2xl p-4">
+      <header className="flex items-start gap-2.5">
+        <div className="h-8 w-8 rounded-full bg-[#dff3d4] text-[#267a3e] flex items-center justify-center shrink-0">
+          <Sprout className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold tracking-tight">
+              Fertilizer Guidance
+            </h3>
+            <span
+              className={cn(
+                'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                status.className,
+              )}
+            >
+              {status.label}
+            </span>
+          </div>
+          <p className="text-[12px] font-medium mt-1">
+            {fertilizer.name ?? 'No corrective fertilizer'}
+          </p>
+        </div>
+      </header>
+
+      {fertilizer.nutrients.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {fertilizer.nutrients.map((nutrient) => (
+            <span
+              key={nutrient}
+              className="rounded-full bg-primary/10 text-primary px-2 py-1 text-[10px] font-medium"
+            >
+              {nutrient}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <p className="mt-3 text-[11px] leading-relaxed text-foreground/80">
+        {fertilizer.guidance}
+      </p>
+      <p className="mt-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[10px] leading-relaxed text-amber-900">
+        {fertilizer.caution}
+      </p>
     </section>
   )
 }

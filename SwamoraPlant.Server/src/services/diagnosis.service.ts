@@ -106,14 +106,17 @@ export const getDiagnosisById = async (
     .limit(1);
   const row = rows[0];
   if (!row) return null;
-  // Older rows predate the `products` field; backfill an empty list so the
-  // response shape stays stable for the API consumer.
+  // Older rows predate the `products` and `fertilizer` fields. Backfill them
+  // so historical diagnoses keep the current API response shape.
   const storedTreatment = row.treatment as Treatment & {
     products?: Treatment['products'];
+    fertilizer?: Treatment['fertilizer'];
   };
+  const currentTreatment = getTreatment(row.plant as PlantType, row.topLabel);
   const treatment: Treatment = {
     ...storedTreatment,
     products: storedTreatment.products ?? [],
+    fertilizer: storedTreatment.fertilizer ?? currentTreatment.fertilizer,
   };
   return {
     id: row.id,

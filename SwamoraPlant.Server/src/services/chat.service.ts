@@ -15,6 +15,8 @@ import { randomUUID } from 'node:crypto';
 import { db } from '../db/index.js';
 import { chatMessages, diagnoses, farms, farmWidgets } from '../db/schema.js';
 import { and, eq, desc, asc } from 'drizzle-orm';
+import type { PlantType } from '../ml/plant-types.js';
+import { getTreatment } from './recommendation.service.js';
 
 export type Role = 'system' | 'user' | 'assistant';
 
@@ -36,8 +38,9 @@ const GROQ_MODEL = process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile';
 const SYSTEM_BASE = `You are Savi, a friendly Zimbabwean agriculture assistant for the SwamoraPlant app.
 Be concise (3–6 sentences) and practical. Use plain language a smallholder farmer can understand.
 Always prioritise advice that is safe for crops, people, and the environment.
-If you suggest pesticide or fungicide dosages, add a short disclaimer:
+If you suggest pesticide, fungicide, or fertilizer dosages, add a short disclaimer:
 "Verify with a local agronomist before applying."
+Do not present fertilizer as a cure for fungal, bacterial, viral, or pest diagnoses.
 You can recommend the user check the Map for shops carrying the suggested product, or take a fresh photo via Diagnose.`;
 
 export interface DiagnosisContext {
@@ -49,6 +52,13 @@ export interface DiagnosisContext {
   diseaseName?: string;
   diseaseCause?: string;
   diseaseSymptoms?: string[];
+  fertilizer?: {
+    status: 'recommended' | 'conditional' | 'not_recommended';
+    name: string | null;
+    nutrients: string[];
+    guidance: string;
+    caution: string;
+  };
   products: Array<{ name: string; size: string; priceUsd: number }>;
   productKeywords: string[];
 }
@@ -98,6 +108,11 @@ export const buildSystemPrompt = (ctx: {
         d.diseaseSymptoms && d.diseaseSymptoms.length > 0
           ? `\n- Key symptoms: ${d.diseaseSymptoms.join('; ')}`
           : ''
+      }
+- Fertilizer guidance: ${
+        d.fertilizer
+          ? `${d.fertilizer.name ?? 'No corrective fertilizer'} (${d.fertilizer.status}) — ${d.fertilizer.guidance} Caution: ${d.fertilizer.caution}`
+          : 'Use only after confirming a nutrient need with a soil test or agronomist.'
       }
 - Locally-available products with indicative prices:
 ${productLines}
@@ -149,12 +164,14 @@ export const loadDiagnosisContext = async (
     medicine: string | null;
     products?: Array<{ name: string; size: string; priceUsd: number }>;
     productKeywords?: string[];
+    fertilizer?: DiagnosisContext['fertilizer'];
   };
   const info = row.diseaseInfo as {
     name?: string;
     cause?: string;
     symptoms?: string[];
   } | null;
+  const currentTreatment = getTreatment(row.plant as PlantType, row.topLabel);
   return {
     plant: row.plant,
     label: row.topLabel,
@@ -164,6 +181,7 @@ export const loadDiagnosisContext = async (
     diseaseName: info?.name,
     diseaseCause: info?.cause,
     diseaseSymptoms: info?.symptoms,
+    fertilizer: treatment.fertilizer ?? currentTreatment.fertilizer,
     products: treatment.products ?? [],
     productKeywords: treatment.productKeywords ?? [],
   };

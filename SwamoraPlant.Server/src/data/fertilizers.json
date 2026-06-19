@@ -1,0 +1,144 @@
+{
+  "potato": {
+    "healthy": {
+      "status": "conditional",
+      "name": "Balanced potato NPK fertilizer",
+      "nutrients": ["Nitrogen (N)", "Phosphorus (P)", "Potassium (K)"],
+      "guidance": "Use only when a soil test or the normal crop schedule shows a need. If required, side-dress beside the row during hilling and follow the product label.",
+      "caution": "The plant appears healthy. Extra fertilizer is not a treatment and over-application can burn roots or create weak, disease-prone growth.",
+      "productKeywords": ["potato fertilizer", "balanced NPK fertilizer"]
+    },
+    "early_blight": {
+      "status": "conditional",
+      "name": "Balanced potato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)", "Phosphorus (P)"],
+      "guidance": "Early blight is not a nutrient deficiency. Continue the normal potato feeding programme only if a soil test shows a need, using a balanced potato blend rather than extra nitrogen.",
+      "caution": "Fertilizer will not cure early blight. Remove infected leaves and control the fungal disease first; avoid heavy nitrogen applications.",
+      "productKeywords": ["potato fertilizer", "balanced NPK fertilizer", "potassium fertilizer"]
+    },
+    "late_blight": {
+      "status": "conditional",
+      "name": "Balanced potato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)", "Phosphorus (P)"],
+      "guidance": "Late blight is not a nutrient deficiency. Continue the normal potato feeding programme only if a soil test shows a need, using a balanced potato blend rather than extra nitrogen.",
+      "caution": "Fertilizer will not stop late blight. Treat the infection urgently and avoid adding heavy nitrogen to badly infected plants.",
+      "productKeywords": ["potato fertilizer", "balanced NPK fertilizer", "potassium fertilizer"]
+    }
+  },
+  "tomato": {
+    "healthy": {
+      "status": "conditional",
+      "name": "Low-nitrogen tomato fertilizer",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)", "Phosphorus (P)"],
+      "guidance": "Apply phosphorus and potassium only where a soil test recommends them. Use a low-nitrogen tomato fertilizer as part of the normal feeding schedule once fruit begins to develop.",
+      "caution": "Too much nitrogen produces leafy growth and can delay fruiting. Do not add fertilizer simply because a diagnosis was performed.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "balanced NPK fertilizer"]
+    },
+    "early_blight": {
+      "status": "conditional",
+      "name": "Low-nitrogen tomato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)"],
+      "guidance": "Early blight is fungal, not a nutrient deficiency. Maintain normal nutrition only if soil testing shows a need; choose a low-nitrogen tomato fertilizer rather than pushing leafy growth.",
+      "caution": "Fertilizer does not cure early blight. Prune infected leaves and use the recommended disease treatment first.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "potassium fertilizer"]
+    },
+    "late_blight": {
+      "status": "conditional",
+      "name": "Low-nitrogen tomato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)"],
+      "guidance": "Late blight is a water-mould disease, not a nutrient deficiency. Maintain normal nutrition only if soil testing shows a need.",
+      "caution": "Fertilizer will not stop late blight. Control the infection immediately and avoid fertilizing severely damaged plants.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "potassium fertilizer"]
+    },
+    "leaf_mold": {
+      "status": "conditional",
+      "name": "Low-nitrogen tomato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)"],
+      "guidance": "Leaf mold is fungal. Use fertilizer only to maintain the normal crop programme when a soil test indicates a need, and prioritize ventilation and disease control.",
+      "caution": "Do not use fertilizer as a leaf-mold treatment. Excess nitrogen can create dense foliage that holds humidity.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "potassium fertilizer"]
+    },
+    "septoria_leaf_spot": {
+      "status": "conditional",
+      "name": "Low-nitrogen tomato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)"],
+      "guidance": "Septoria leaf spot is fungal. Continue normal feeding only where soil testing indicates a nutrient need.",
+      "caution": "Fertilizer does not cure Septoria. Remove infected foliage and follow the recommended disease-control steps.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "potassium fertilizer"]
+    },
+    "bacterial_spot": {
+      "status": "conditional",
+      "name": "Low-nitrogen tomato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)"],
+      "guidance": "Bacterial spot is an infection, not a nutrient deficiency. Keep unaffected plants on their normal soil-test-based feeding programme.",
+      "caution": "Fertilizer cannot kill the bacteria. Avoid heavy nitrogen and focus on sanitation and the recommended bactericide.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "potassium fertilizer"]
+    },
+    "spider_mites": {
+      "status": "conditional",
+      "name": "Balanced low-nitrogen tomato fertilizer",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)"],
+      "guidance": "Spider mites are pests, not a nutrient deficiency. Maintain normal feeding only if the crop needs it and keep plants evenly watered.",
+      "caution": "Fertilizer will not control mites. Avoid excess nitrogen, which can encourage soft new growth.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "balanced NPK fertilizer"]
+    },
+    "target_spot": {
+      "status": "conditional",
+      "name": "Low-nitrogen tomato fertilizer with potassium",
+      "nutrients": ["Potassium (K)", "Nitrogen (N)"],
+      "guidance": "Target spot is fungal. Maintain normal soil-test-based nutrition while treating the disease, without adding extra nitrogen.",
+      "caution": "Fertilizer is supportive only and will not cure target spot.",
+      "productKeywords": ["tomato fertilizer", "low nitrogen fertilizer", "potassium fertilizer"]
+    },
+    "yellow_leaf_curl_virus": {
+      "status": "not_recommended",
+      "name": null,
+      "nutrients": [],
+      "guidance": "No corrective fertilizer is recommended for an infected plant. Tomato Yellow Leaf Curl Virus has no fertilizer cure; maintain normal nutrition only for unaffected plants.",
+      "caution": "Do not spend extra fertilizer trying to recover a severely infected plant. Remove infected plants and control whiteflies.",
+      "productKeywords": []
+    },
+    "mosaic_virus": {
+      "status": "not_recommended",
+      "name": null,
+      "nutrients": [],
+      "guidance": "No corrective fertilizer is recommended for an infected plant. Mosaic virus has no fertilizer cure; maintain normal nutrition only for unaffected plants.",
+      "caution": "Remove infected plants and disinfect tools. Extra fertilizer will not remove the virus.",
+      "productKeywords": []
+    }
+  },
+  "maize": {
+    "healthy": {
+      "status": "conditional",
+      "name": "Compound D or balanced NPK basal fertilizer, followed by AN or urea if needed",
+      "nutrients": ["Nitrogen (N)", "Phosphorus (P)", "Potassium (K)"],
+      "guidance": "Choose the basal and top-dressing programme from a soil test, expected yield, crop stage, and local agronomist guidance.",
+      "caution": "Do not guess the nitrogen rate. Too much or poorly timed nitrogen wastes money and can damage the crop or environment.",
+      "productKeywords": ["Compound D fertilizer", "maize fertilizer", "ammonium nitrate", "urea"]
+    },
+    "common_rust": {
+      "status": "conditional",
+      "name": "Soil-test-based maize NPK with correctly timed nitrogen top-dressing",
+      "nutrients": ["Nitrogen (N)", "Phosphorus (P)", "Potassium (K)"],
+      "guidance": "Common rust is fungal, not a nutrient deficiency. Keep the crop on its normal basal and top-dressing programme only where soil and crop stage support it.",
+      "caution": "Fertilizer will not cure rust. Avoid adding extra nitrogen as a response to leaf symptoms.",
+      "productKeywords": ["maize fertilizer", "Compound D fertilizer", "ammonium nitrate", "urea"]
+    },
+    "northern_leaf_blight": {
+      "status": "conditional",
+      "name": "Soil-test-based maize NPK with correctly timed nitrogen top-dressing",
+      "nutrients": ["Nitrogen (N)", "Phosphorus (P)", "Potassium (K)"],
+      "guidance": "Northern leaf blight is fungal. Continue the planned maize fertilizer programme only if soil testing and crop stage show that nutrients are due.",
+      "caution": "Fertilizer is not a blight treatment. Use disease control and residue management, and do not apply extra nitrogen to compensate for damaged leaves.",
+      "productKeywords": ["maize fertilizer", "Compound D fertilizer", "ammonium nitrate", "urea"]
+    },
+    "gray_leaf_spot": {
+      "status": "conditional",
+      "name": "Soil-test-based maize NPK with correctly timed nitrogen top-dressing",
+      "nutrients": ["Nitrogen (N)", "Phosphorus (P)", "Potassium (K)"],
+      "guidance": "Gray leaf spot is fungal. Maintain the planned soil-test-based fertilizer schedule while controlling the disease and managing crop residue.",
+      "caution": "Extra fertilizer will not cure gray leaf spot. Avoid unnecessary nitrogen applications.",
+      "productKeywords": ["maize fertilizer", "Compound D fertilizer", "ammonium nitrate", "urea"]
+    }
+  }
+}

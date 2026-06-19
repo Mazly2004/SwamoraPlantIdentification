@@ -14,11 +14,21 @@ export interface TreatmentProduct {
   priceUsd: number
 }
 
+export interface FertilizerRecommendation {
+  status: 'recommended' | 'conditional' | 'not_recommended'
+  name: string | null
+  nutrients: string[]
+  guidance: string
+  caution: string
+  productKeywords: string[]
+}
+
 export interface Treatment {
   summary: string
   medicine: string | null
   products: TreatmentProduct[]
   productKeywords: string[]
+  fertilizer: FertilizerRecommendation
 }
 
 export interface DiseaseInfo {
