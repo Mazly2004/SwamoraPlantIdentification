@@ -7,6 +7,9 @@ dotenv.config();
 
 const connectionString = process.env.DATABASE_URL!;
 
-// Disable prefetch as it is not supported for "Transaction" pool mode
-const client = postgres(connectionString, { prepare: false });
+const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+const client = postgres(connectionString, {
+  prepare: false,
+  ssl: isLocal ? undefined : { rejectUnauthorized: false },
+});
 export const db = drizzle(client, { schema });
